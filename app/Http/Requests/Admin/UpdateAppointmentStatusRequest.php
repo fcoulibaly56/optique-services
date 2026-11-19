@@ -1,0 +1,18 @@
+<?php
+
+namespace App\Http\Requests\Admin;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class UpdateAppointmentStatusRequest extends FormRequest
+{
+    public function authorize(): bool { return true; }
+
+    public function rules(): array
+    {
+        return [
+            'status' => 'required|string|in:en_attente,confirme,termine,annule,deplace',
+            'comment' => 'nullable|string|max:500',
+        ];
+    }
+}
