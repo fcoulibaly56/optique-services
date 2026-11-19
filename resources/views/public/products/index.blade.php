@@ -5,19 +5,8 @@
 
 @section('content')
 @php
-    $montureConfig = config('montures', []);
-    $montures = array_values(array_filter($montureConfig['items'] ?? [], function ($monture) {
-        $image = basename($monture['image'] ?? '');
-        return preg_match('/^monture-[a-z0-9_-]+\\.(?:jpe?g|png|webp)$/i', $image)
-            && is_file(public_path('images/montures/' . $image));
-    }));
-    $montureFilters = $montureConfig['filters'] ?? [];
-    $filterLabelMap = array_column($montureFilters, 'label', 'key');
-    $coverPath = 'images/montures/catalogue-cover.jpg';
-    if (!is_file(public_path($coverPath)) && !empty($montures)) {
-        $coverPath = 'images/montures/' . basename($montures[0]['image']);
-    }
-    $coverImage = is_file(public_path($coverPath)) ? asset($coverPath) : null;
+     $coverPath = 'images/montures/catalogue-cover.jpg';
+    $coverImage = is_file(public_path($coverPath)) ? asset($coverPath) : ($montures[0]['url'] ?? null);
     $contactUrl = \Illuminate\Support\Facades\Route::has('contact') ? route('contact') : url('/#contact');
 @endphp
 
@@ -83,19 +72,22 @@
 
     @if(count($montures))
         <div class="mt-5 grid grid-cols-2 gap-3 sm:mt-7 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
-            @foreach($montures as $index => $monture)
+                       @foreach($montures as $index => $monture)
                 @php
                     $montureName = $monture['name'] ?? 'Monture ' . str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT);
                     $photoName = basename($monture['image'] ?? '');
-                    $photoPath = 'images/montures/' . $photoName;
-                    $validPhotoName = preg_match('/^monture-[a-z0-9_-]+\\.(?:jpe?g|png|webp)$/i', $photoName);
-                    $photoUrl = $validPhotoName && is_file(public_path($photoPath)) ? asset($photoPath) : null;
+                    $photoUrl = $monture['url'] ?? null;
                     $filterKeys = array_values(array_unique(array_filter(array_merge($monture['audiences'] ?? [], $monture['types'] ?? [], $monture['styles'] ?? []))));
                     $filterLabels = array_values(array_filter(array_map(fn ($key) => $filterLabelMap[$key] ?? null, $filterKeys)));
                     $searchText = implode(' ', array_filter(array_merge([$montureName, $monture['note'] ?? ''], $filterLabels)));
+                    $lightbox = json_encode([
+                        'src'   => $photoUrl,
+                        'title' => $montureName,
+                        'note'  => $monture['note'] ?? '',
+                    ], JSON_UNESCAPED_UNICODE);
                 @endphp
                 <article data-category-card="{{ implode(' ', $filterKeys) }}" data-search="{{ $searchText }}" data-reveal class="group overflow-hidden rounded-2xl border border-optique-border bg-white transition duration-300 hover:-translate-y-1 hover:border-[#e7c5be] hover:shadow-xl hover:shadow-[#593b35]/[.08] sm:rounded-3xl">
-                    <div class="relative aspect-[4/3] overflow-hidden bg-[#f5f1ef] p-4 sm:p-6">
+                    <div class="relative aspect-[4/3] overflow-hidden bg-[#f5f1ef] p-4 sm:p-6 @if($photoUrl) cursor-zoom-in @endif" @if($photoUrl) data-lightbox="{{ $lightbox }}" @endif>
                         @if($photoUrl)
                             <img src="{{ $photoUrl }}" alt="{{ $montureName }} — photo du magasin" loading="lazy" decoding="async" class="h-full w-full object-contain transition duration-700 group-hover:scale-[1.04]" onerror="this.style.display='none';this.nextElementSibling.style.display='grid';">
                             <div style="display:none" class="absolute inset-0 place-items-center bg-gradient-to-br from-[#f8f2ef] via-[#eee5e1] to-[#faf8f6]"><div class="text-center"><span class="text-optique-red" aria-hidden="true">◎</span><p class="mt-2 text-[10px] text-optique-gray">Photo introuvable : {{ $photoName }}</p></div></div>
@@ -109,7 +101,11 @@
                         <p class="mt-1 text-xs leading-5 text-optique-gray">{{ $monture['note'] ?: 'Essayage et disponibilité à confirmer en boutique.' }}</p>
                         <div class="mt-4 flex items-center justify-between border-t border-optique-border pt-3">
                             <span class="text-[10px] font-medium uppercase tracking-[.12em] text-optique-gray">Infos en boutique</span>
-                            <a href="{{ $photoUrl ?? $contactUrl }}" @if($photoUrl) target="_blank" rel="noopener" @endif class="text-xs font-semibold text-optique-red transition hover:underline">{{ $photoUrl ? 'Agrandir ↗' : 'Nous contacter →' }}</a>
+                            @if($photoUrl)
+                                <button type="button" data-lightbox="{{ $lightbox }}" class="text-xs font-semibold text-optique-red transition hover:underline">Agrandir ⤢</button>
+                            @else
+                                <a href="{{ $contactUrl }}" class="text-xs font-semibold text-optique-red transition hover:underline">Nous contacter →</a>
+                            @endif
                         </div>
                     </div>
                 </article>
@@ -125,4 +121,5 @@
         </div>
     @endif
 </section>
+@include('public._lightbox')
 @endsection

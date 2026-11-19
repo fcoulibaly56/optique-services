@@ -12,7 +12,9 @@ use App\Http\Controllers\Admin\PurchaseController;
 use App\Http\Controllers\Admin\InsuranceController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\CustomerController;
+use App\Http\Controllers\SuperAdmin\GalleryItemController;
 use App\Http\Controllers\SuperAdmin\ProductController as SuperAdminProductController;
+use App\Http\Controllers\SuperAdmin\CategoryController as SuperAdminCategoryController;
 use App\Http\Controllers\Public\AppointmentController as PublicAppointmentController;
 use App\Http\Controllers\Admin\AppointmentController as AdminAppointmentController;
 use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboard;
@@ -37,6 +39,14 @@ Route::post('/rendez-vous', [PublicAppointmentController::class, 'store'])->name
     Route::patch('products/{product}/visibility', [SuperAdminProductController::class, 'toggleVisibility'])
         ->name('products.toggle-visibility');
     Route::resource('products', SuperAdminProductController::class)->except(['show']);
+    //galerie
+    Route::patch('gallery/{galleryItem}/visibility', [GalleryItemController::class, 'toggleVisibility'])
+    ->name('gallery.toggle-visibility');
+Route::resource('gallery', GalleryItemController::class)
+    ->parameters(['gallery' => 'galleryItem'])
+    ->except(['show']);
+    //categories
+    Route::resource('categories', SuperAdminCategoryController::class)->except(['show']);
 });
   // ---------- ESPACE ADMIN / ÉQUIPE ----------
    Route::middleware(['auth', 'role:opticien,admin,superadmin'])->prefix('admin')->name('admin.')->group(function () {

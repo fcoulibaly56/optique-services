@@ -1,95 +1,126 @@
-@extends('layouts.admin')
+ @extends('layouts.admin')
 @section('title', 'Fichier Clients')
 @section('content')
-<div class="py-6 px-4 sm:px-6 lg:px-8 bg-[#F9F8F6] min-h-screen">
+<div class="min-h-screen w-full bg-[#F9F8F6] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+    <div class="mx-auto w-full max-w-[1440px] space-y-6">
 
-    <!-- En-tête, Recherche et Actions -->
-    <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-6 gap-4">
-        <h1 class="text-2xl font-serif font-bold text-gray-800">Fichier Clients</h1>
-
-        <div class="flex flex-col lg:flex-row gap-3 w-full xl:w-auto">
-            <!-- Recherche & Filtres -->
-            <form method="GET" action="{{ route('admin.customers.index') }}" class="flex flex-wrap gap-2 items-center bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Nom, téléphone..." class="rounded-md border-gray-300 text-sm w-full sm:w-48 focus:ring-[#A33B36] focus:border-[#A33B36]">
-                <input type="date" name="date_from" value="{{ request('date_from') }}" class="rounded-md border-gray-300 text-sm focus:ring-[#A33B36] focus:border-[#A33B36]">
-                <span class="text-gray-400">au</span>
-                <input type="date" name="date_to" value="{{ request('date_to') }}" class="rounded-md border-gray-300 text-sm focus:ring-[#A33B36] focus:border-[#A33B36]">
-                <button type="submit" class="bg-gray-800 text-white px-3 py-2 rounded-md text-sm hover:bg-gray-700">Filtrer</button>
-                @if(request()->anyFilled(['search', 'date_from', 'date_to']))
-                    <a href="{{ route('admin.customers.index') }}" class="text-sm text-gray-500 hover:text-red-500">Réinitialiser</a>
-                @endif
-            </form>
-
-            <!-- Import / Export -->
-            <div class="flex gap-2 items-center">
-                <a href="{{ route('admin.customers.export') }}" class="bg-green-600 text-white px-3 py-2 rounded-md text-sm hover:bg-green-700 flex items-center">
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                    Exporter
-                </a>
-                <form action="{{ route('admin.customers.import') }}" method="POST" enctype="multipart/form-data" class="flex items-center bg-white border border-gray-300 rounded-md p-1">
-                    @csrf
-                    <input type="file" name="file" class="text-xs w-32" required>
-                    <button type="submit" class="bg-blue-600 text-white px-2 py-1 rounded text-xs hover:bg-blue-700">Importer</button>
-                </form>
-                <a href="{{ route('admin.customers.create') }}" class="bg-[#A33B36] text-white px-4 py-2 rounded-md text-sm hover:bg-opacity-90 whitespace-nowrap">+ Nouveau</a>
+        <!-- Titre et action principale -->
+        <header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div class="min-w-0">
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#A33B36]">Espace équipe</p>
+                <h1 class="mt-1 whitespace-nowrap font-serif text-2xl font-bold leading-tight text-gray-900 sm:text-3xl">Fichier Clients</h1>
+                <p class="mt-1 text-sm text-gray-500">Retrouvez et gérez les dossiers des clients du magasin.</p>
             </div>
-        </div>
-    </div>
 
-    <!-- Vue Mobile (Cartes) -->
-    <div class="md:hidden space-y-4">
-        @forelse($customers as $customer)
-            <div class="bg-white rounded-lg shadow p-4 border-l-4 border-[#A33B36]">
-                <p class="font-medium text-gray-900">{{ $customer->first_name }} {{ $customer->last_name }}</p>
-                <p class="text-sm text-gray-500">{{ $customer->phone }}</p>
-                <div class="mt-3 pt-3 border-t flex justify-between items-center">
-                    <a href="{{ route('admin.customers.show', $customer) }}" class="text-[#A33B36] text-sm font-medium">Dossier &rarr;</a>
-                    <div class="flex gap-2">
-                        <a href="{{ route('admin.customers.edit', $customer) }}" class="text-blue-600 text-sm">Modifier</a>
-                        <form action="{{ route('admin.customers.destroy', $customer) }}" method="POST" onsubmit="return confirm('Archiver ce client ?');">
-                            @csrf @method('DELETE')
-                            <button type="submit" class="text-red-600 text-sm">Archiver</button>
-                        </form>
-                    </div>
+            <a href="{{ route('admin.customers.create') }}" class="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-[#A33B36] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#8F302C] focus:outline-none focus:ring-2 focus:ring-[#A33B36] focus:ring-offset-2">
+                <span aria-hidden="true" class="text-lg leading-none">+</span>
+                <span>Nouveau client</span>
+            </a>
+        </header>
+
+        <!-- Recherche et filtres : bloc séparé du titre -->
+        <form method="GET" action="{{ route('admin.customers.index') }}" class="w-full rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-[minmax(260px,1.6fr)_minmax(170px,1fr)_minmax(170px,1fr)_auto] xl:items-end">
+                <div class="sm:col-span-2 xl:col-span-1">
+                    <label for="customer-search" class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500">Recherche</label>
+                    <input id="customer-search" type="search" name="search" value="{{ request('search') }}" placeholder="Nom ou téléphone" class="w-full rounded-xl border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:border-[#A33B36] focus:ring-[#A33B36]">
+                </div>
+
+                <div>
+                    <label for="customer-date-from" class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500">Inscrit à partir du</label>
+                    <input id="customer-date-from" type="date" name="date_from" value="{{ request('date_from') }}" class="w-full rounded-xl border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-700 focus:border-[#A33B36] focus:ring-[#A33B36]">
+                </div>
+
+                <div>
+                    <label for="customer-date-to" class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500">Jusqu’au</label>
+                    <input id="customer-date-to" type="date" name="date_to" value="{{ request('date_to') }}" class="w-full rounded-xl border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-700 focus:border-[#A33B36] focus:ring-[#A33B36]">
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2 sm:col-span-2 xl:col-span-1 xl:justify-end">
+                    <button type="submit" class="inline-flex min-h-10 items-center justify-center rounded-xl bg-gray-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2">Filtrer</button>
+                    @if(request()->anyFilled(['search', 'date_from', 'date_to']))
+                        <a href="{{ route('admin.customers.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900">Réinitialiser</a>
+                    @endif
                 </div>
             </div>
-        @empty
-            <p class="text-gray-500 text-center py-4">Aucun client trouvé.</p>
-        @endforelse
-    </div>
+        </form>
 
-    <!-- Vue Desktop (Tableau) -->
-    <div class="hidden md:block bg-white rounded-lg shadow overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nom complet</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Inscrit le</th>
-                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                @forelse($customers as $customer)
-                    <tr class="hover:bg-gray-50 transition">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $customer->last_name }} {{ $customer->first_name }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $customer->phone }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $customer->created_at->format('d/m/Y') }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <a href="{{ route('admin.customers.show', $customer) }}" class="text-[#A33B36] bg-red-50 px-3 py-1 rounded-md mr-2">Dossier</a>
-                            <a href="{{ route('admin.customers.edit', $customer) }}" class="text-blue-600 hover:underline mr-2">Modifier</a>
-                            <form action="{{ route('admin.customers.destroy', $customer) }}" method="POST" class="inline" onsubmit="return confirm('Archiver ?');">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="text-red-600 hover:underline">Archiver</button>
-                            </form>
-                        </td>
-                    </tr>
-                @empty
-                    <tr><td colspan="4" class="px-6 py-4 text-center text-gray-500">Aucun client trouvé.</td></tr>
-                @endforelse
-            </tbody>
-        </table>
-        <div class="px-6 py-4 border-t">{{ $customers->links() }}</div>
+        <!-- Résultats sur mobile -->
+        <div class="space-y-3 md:hidden">
+            @forelse($customers as $customer)
+                <article class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <h2 class="break-words font-semibold text-gray-900">{{ $customer->first_name }} {{ $customer->last_name }}</h2>
+                            <p class="mt-1 text-sm text-gray-500">{{ $customer->phone }}</p>
+                            <p class="mt-1 text-xs text-gray-400">Inscrit le {{ $customer->created_at->format('d/m/Y') }}</p>
+                        </div>
+                        <a href="{{ route('admin.customers.show', $customer) }}" class="shrink-0 rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-[#A33B36] transition hover:bg-red-100">Dossier</a>
+                    </div>
+                    <div class="mt-4 flex flex-wrap items-center justify-end gap-x-4 gap-y-2 border-t border-gray-100 pt-3">
+                        <a href="{{ route('admin.customers.edit', $customer) }}" class="text-sm font-medium text-blue-700 hover:underline">Modifier</a>
+                        <form action="{{ route('admin.customers.destroy', $customer) }}" method="POST" onsubmit="return confirm('Archiver ce client ?');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="text-sm font-medium text-red-700 hover:underline">Archiver</button>
+                        </form>
+                    </div>
+                </article>
+            @empty
+                <div class="rounded-2xl border border-dashed border-gray-300 bg-white px-5 py-10 text-center">
+                    <p class="font-medium text-gray-700">Aucun client trouvé</p>
+                    <p class="mt-1 text-sm text-gray-500">Essayez de modifier votre recherche ou vos filtres.</p>
+                </div>
+            @endforelse
+        </div>
+
+        <!-- Résultats sur tablette et ordinateur -->
+        <section class="hidden overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm md:block" aria-label="Liste des clients">
+            <div class="overflow-x-auto">
+                <table class="w-full min-w-[720px] divide-y divide-gray-200">
+                    <caption class="sr-only">Liste des clients du magasin</caption>
+                    <thead class="bg-gray-50/90">
+                        <tr>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Nom complet</th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Contact</th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Inscrit le</th>
+                            <th scope="col" class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @forelse($customers as $customer)
+                            <tr class="transition hover:bg-[#FCFAF9]">
+                                <td class="whitespace-nowrap px-6 py-4 text-sm font-semibold text-gray-900">{{ $customer->last_name }} {{ $customer->first_name }}</td>
+                                <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-600">{{ $customer->phone }}</td>
+                                <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500">{{ $customer->created_at->format('d/m/Y') }}</td>
+                                <td class="whitespace-nowrap px-6 py-4 text-right text-sm">
+                                    <div class="flex items-center justify-end gap-3">
+                                        <a href="{{ route('admin.customers.show', $customer) }}" class="rounded-lg bg-red-50 px-3 py-2 font-medium text-[#A33B36] transition hover:bg-red-100">Dossier</a>
+                                        <a href="{{ route('admin.customers.edit', $customer) }}" class="font-medium text-blue-700 hover:underline">Modifier</a>
+                                        <form action="{{ route('admin.customers.destroy', $customer) }}" method="POST" onsubmit="return confirm('Archiver ce client ?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="font-medium text-red-700 hover:underline">Archiver</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="px-6 py-12 text-center">
+                                    <p class="font-medium text-gray-700">Aucun client trouvé</p>
+                                    <p class="mt-1 text-sm text-gray-500">Essayez de modifier votre recherche ou vos filtres.</p>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            @if(method_exists($customers, 'links'))
+                <div class="border-t border-gray-100 px-5 py-4 sm:px-6">{{ $customers->links() }}</div>
+            @endif
+        </section>
     </div>
 </div>
 @endsection

@@ -9,18 +9,10 @@
     $productsUrl = \Illuminate\Support\Facades\Route::has('products.index') ? route('products.index') : '#collection';
     $servicesUrl = \Illuminate\Support\Facades\Route::has('services') ? route('services') : '#services';
     $contactUrl = \Illuminate\Support\Facades\Route::has('contact') ? route('contact') : '#contact';
-    $montureConfig = config('montures', []);
-    $montures = array_values(array_filter($montureConfig['items'] ?? [], function ($monture) {
-        $image = basename($monture['image'] ?? '');
-        return preg_match('/^monture-[a-z0-9_-]+\\.(?:jpe?g|png|webp)$/i', $image)
-            && is_file(public_path('images/montures/' . $image));
-    }));
-    $montureFilters = $montureConfig['filters'] ?? [];
-    $filterLabelMap = array_column($montureFilters, 'label', 'key');
-    $preferredHeroPath = 'images/montures/hero-monture.jpg';
-    $firstMonturePath = !empty($montures) ? 'images/montures/' . basename($montures[0]['image']) : null;
-    $heroImagePath = is_file(public_path($preferredHeroPath)) ? $preferredHeroPath : $firstMonturePath;
-    $heroImage = $heroImagePath ? asset($heroImagePath) : null;
+     $preferredHeroPath = 'images/montures/hero-monture.jpg';
+    $heroImage = is_file(public_path($preferredHeroPath))
+        ? asset($preferredHeroPath)
+        : ($montures[0]['url'] ?? null);
 @endphp
 
 <section class="relative isolate overflow-hidden bg-[#fbf8f6]">
@@ -74,9 +66,8 @@
         <div id="home-monture-carousel" data-product-carousel tabindex="0" role="region" aria-label="Montures disponibles en boutique" aria-roledescription="carrousel" class="mt-5 -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain px-4 pb-4 scroll-smooth motion-reduce:scroll-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-optique-red sm:mx-0 sm:mt-7 sm:gap-5 sm:px-0">
             @foreach($montures as $index => $monture)
                 @php
-                    $photoName = basename($monture['image']);
-                    $photoPath = 'images/montures/' . $photoName;
-                    $photoUrl = is_file(public_path($photoPath)) ? asset($photoPath) : null;
+                                         $photoName = basename($monture['image']);
+                    $photoUrl = $monture['url'];
                     $filterKeys = array_values(array_unique(array_filter(array_merge($monture['audiences'] ?? [], $monture['types'] ?? [], $monture['styles'] ?? []))));
                     $filterLabels = array_values(array_filter(array_map(fn ($key) => $filterLabelMap[$key] ?? null, $filterKeys)));
                     $searchText = implode(' ', array_filter(array_merge([$monture['name'] ?? '', $monture['note'] ?? ''], $filterLabels)));

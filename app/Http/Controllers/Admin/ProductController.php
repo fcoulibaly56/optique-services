@@ -15,8 +15,8 @@ class ProductController extends Controller
     }
 
     public function create() {
-        $categories = Category::all();
-        return view('admin.products.create', compact('categories'));
+$categories = Category::forAdmin()->orderBy('position')->orderBy('name')->get();
+    return view('admin.products.create', compact('categories'));
     }
 
     public function store(Request $request) {
