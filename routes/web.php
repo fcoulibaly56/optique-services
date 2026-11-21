@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\ProductController;
 use App\Http\Controllers\Public\PageController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PurchaseController;
 use App\Http\Controllers\Admin\InsuranceController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\SuperAdmin\UserController as SuperAdminUserController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\SuperAdmin\GalleryItemController;
 use App\Http\Controllers\SuperAdmin\ProductController as SuperAdminProductController;
@@ -26,12 +28,13 @@ Route::get('/montures/{product:slug}', [ProductController::class, 'show'])->name
 Route::get('/services', [PageController::class, 'services'])->name('services');
 Route::get('/a-propos', [PageController::class, 'about'])->name('about');
 Route::get('/contact', [PageController::class, 'contact'])->name('contact');
-Route::post('/contact', [PageController::class, 'contactStore'])->name('contact.store');
+Route::post('/contact', [PageController::class, 'contactStore'])->name('contact.store')->middleware('throttle:6,1');
 
-Route::get('/rendez-vous', [PublicAppointmentController::class, 'create'])->name('appointment.create');
+Route::get('/rendez-vous', [PublicAppointmentController::class, 'create'])->name('appointment.create')->middleware('throttle:6,1')  ;
 Route::post('/rendez-vous', [PublicAppointmentController::class, 'store'])->name('appointment.store');
 
 // ---------- ESPACE SUPER-ADMIN ----------
+
  Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->name('superadmin.')->group(function () {
     Route::get('/', [SuperAdminDashboard::class, 'index'])->name('dashboard');
 
@@ -47,6 +50,9 @@ Route::resource('gallery', GalleryItemController::class)
     ->except(['show']);
     //categories
     Route::resource('categories', SuperAdminCategoryController::class)->except(['show']);
+    // Utilisateurs
+    Route::patch('users/{user}/active', [SuperAdminUserController::class, 'toggleActive'])->name('users.toggle-active');
+Route::resource('users', SuperAdminUserController::class)->except(['show']);
 });
   // ---------- ESPACE ADMIN / ÉQUIPE ----------
    Route::middleware(['auth', 'role:opticien,admin,superadmin'])->prefix('admin')->name('admin.')->group(function () {
@@ -98,6 +104,10 @@ Route::resource('gallery', GalleryItemController::class)
     // Assurances
     Route::get('/insurances', [\App\Http\Controllers\Admin\InsuranceController::class, 'index'])->name('insurances.index');
     Route::get('/insurances/{insurance}/orders', [\App\Http\Controllers\Admin\InsuranceController::class, 'orders'])->name('insurances.orders');
+    // Demandes de contact (formulaire du site)
+Route::get('/contact-requests', [\App\Http\Controllers\Admin\ContactRequestController::class, 'index'])->name('contact-requests.index');
+Route::patch('/contact-requests/{contactRequest}/processed', [\App\Http\Controllers\Admin\ContactRequestController::class, 'toggleProcessed'])->name('contact-requests.toggle-processed');
+Route::delete('/contact-requests/{contactRequest}', [\App\Http\Controllers\Admin\ContactRequestController::class, 'destroy'])->name('contact-requests.destroy');
     // Messagerie
     Route::get('/messages', [\App\Http\Controllers\Admin\ConversationController::class, 'index'])->name('messages.index');
     Route::get('/messages/{conversation}', [\App\Http\Controllers\Admin\ConversationController::class, 'show'])->name('messages.show');
@@ -122,5 +132,18 @@ Route::middleware(['auth', 'role:client'])->prefix('mon-espace')->name('client.'
     Route::post('/messages', [\App\Http\Controllers\Client\MessageController::class, 'store'])->name('messages.store'); // <-- AJOUTÉ
     Route::get('/messages/{conversation}', [\App\Http\Controllers\Client\MessageController::class, 'show'])->name('messages.show');
     Route::post('/messages/{conversation}/reply', [\App\Http\Controllers\Client\MessageController::class, 'reply'])->name('messages.reply');
-});
+
+    Route::middleware(['auth'])->get('/api/unread-count', function () {
+    $user = Auth::user();
+    if ($user->role === 'client' && $user->customer) {
+        $count = \App\Models\Message::where('sender_role', 'staff')
+            ->whereHas('conversation', fn($q) => $q->where('customer_id', $user->customer->id))
+            ->whereDoesntHave('reads', fn($q) => $q->where('user_id', $user->id))->count();
+    } else {
+        $count = \App\Models\Message::where('sender_role', 'client')
+            ->whereDoesntHave('reads', fn($q) => $q->where('user_id', $user->id))->count();
+    }
+    return response()->json(['count' => $count]);
+})->name('api.unread');
+    });
 require __DIR__.'/auth.php';

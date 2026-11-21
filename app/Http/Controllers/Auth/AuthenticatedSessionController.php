@@ -22,26 +22,25 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-          public function store(LoginRequest $request): RedirectResponse
-    {
-        $request->authenticate();
+       public function store(LoginRequest $request): RedirectResponse
+{
+    $request->authenticate();
 
-        $request->session()->regenerate();
+    $request->session()->regenerate();
 
-        // Logique de redirection selon le rôle
-        $role = Auth::user()->role;
+    [$home, $prefix] = match (Auth::user()->role) {
+        'superadmin'        => [route('superadmin.dashboard', absolute: false), '/superadmin'],
+        'opticien', 'admin' => [route('admin.dashboard', absolute: false), '/admin'],
+        default             => [route('client.dashboard', absolute: false), '/mon-espace'],
+    };
 
-        if ($role === 'superadmin') {
-            return redirect()->intended(route('superadmin.dashboard', absolute: false));
-        }
+    // La page demandée avant la connexion n'est réutilisée que si elle est dans l'espace du rôle
+    $intended = $request->session()->pull('url.intended');
+    $path = $intended ? (parse_url($intended, PHP_URL_PATH) ?: '') : '';
+    $inOwnArea = $path === $prefix || str_starts_with($path, $prefix . '/');
 
-        if (in_array($role, ['opticien', 'admin'])) {
-            return redirect()->intended(route('admin.dashboard', absolute: false));
-        }
-
-        // Par défaut, client
-        return redirect()->intended(route('client.dashboard', absolute: false));
-    }
+    return redirect()->to($inOwnArea ? $intended : $home);
+}
 
         public function createTeam(): View
     {

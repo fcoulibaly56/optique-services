@@ -9,7 +9,10 @@
             <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#A33B36]">Mon espace personnel</p>
             <div class="mt-2 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <h1 class="font-serif text-2xl font-bold leading-tight text-gray-900 sm:text-3xl">Bonjour, {{ auth()->user()->name }}</h1>
+                    <!-- MODIFICATION ICI : Utilisation de $customer au lieu de auth()->user()->name -->
+                    <h1 class="font-serif text-2xl font-bold leading-tight text-gray-900 sm:text-3xl">
+                        Bonjour, {{ $customer->first_name }} {{ $customer->last_name }}
+                    </h1>
                     <p class="mt-2 max-w-2xl text-sm leading-6 text-gray-500">Retrouvez ici l’essentiel sur votre commande et vos rendez-vous.</p>
                 </div>
                 <div class="hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#A33B36]/10 text-[#A33B36] sm:flex" aria-hidden="true">
@@ -104,11 +107,13 @@
                         <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                             <div class="min-w-0">
                                 <p class="text-xs font-medium uppercase tracking-wide text-gray-400">Motif</p>
-                                <h3 class="mt-1 break-words text-lg font-bold text-gray-900">{{ ucfirst(str_replace('_', ' ', $nextAppointment->motive)) }}</h3>
+                                <!-- MODIFICATION ICI : Utilisation de motive_label -->
+                                <h3 class="mt-1 break-words text-lg font-bold text-gray-900">{{ $nextAppointment->motive_label }}</h3>
                             </div>
                             <span class="inline-flex w-fit shrink-0 items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ring-inset {{ $isAppointmentConfirmed ? 'bg-emerald-50 text-emerald-800 ring-emerald-200' : 'bg-amber-50 text-amber-800 ring-amber-200' }}">
                                 <span class="h-1.5 w-1.5 rounded-full bg-current"></span>
-                                {{ $isAppointmentConfirmed ? 'Confirmé' : 'En attente de validation' }}
+                                <!-- MODIFICATION ICI : Utilisation de status_label -->
+                                {{ $nextAppointment->status_label }}
                             </span>
                         </div>
 

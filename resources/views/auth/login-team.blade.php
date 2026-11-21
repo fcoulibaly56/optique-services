@@ -13,22 +13,29 @@
         <p class="text-optique-gray">Accès réservé à l'équipe du magasin</p>
     </div>
 
+    @if ($errors->any())
+        <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm" role="alert">
+            <ul class="list-disc list-inside">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <form method="POST" action="{{ route('login') }}" class="space-y-5">
         @csrf
         <div>
-            <label class="block text-sm font-medium text-optique-text mb-2">Adresse e-mail ou téléphone</label>
-            <input type="text" name="email" required class="block w-full rounded-lg border-optique-border bg-gray-50 focus:bg-white focus:border-optique-red focus:ring-optique-red sm:text-sm px-4 py-3" placeholder="votre@email.com">
+            <label class="block text-sm font-medium text-optique-text mb-2">Adresse e-mail</label>
+            <input type="email" name="email" value="{{ old('email') }}" required autocomplete="username" class="block w-full rounded-lg border-optique-border bg-gray-50 focus:bg-white focus:border-optique-red focus:ring-optique-red sm:text-sm px-4 py-3" placeholder="votre@email.com">
         </div>
         <div>
-            <div class="flex justify-between items-center mb-2">
-                <label class="block text-sm font-medium text-optique-text">Mot de passe</label>
-                <a href="#" class="text-sm text-optique-red hover:underline">Mot de passe oublié ?</a>
-            </div>
-            <input type="password" name="password" required class="block w-full rounded-lg border-optique-border bg-gray-50 focus:bg-white focus:border-optique-red focus:ring-optique-red sm:text-sm px-4 py-3" placeholder="••••••••">
+            <label class="block text-sm font-medium text-optique-text mb-2">Mot de passe</label>
+            <input type="password" name="password" required autocomplete="current-password" class="block w-full rounded-lg border-optique-border bg-gray-50 focus:bg-white focus:border-optique-red focus:ring-optique-red sm:text-sm px-4 py-3" placeholder="••••••••">
         </div>
         <button type="submit" class="w-full flex justify-center py-3.5 px-4 rounded-lg shadow-sm text-sm font-bold text-white bg-optique-red hover:bg-optique-redhover transition-all">
             Se connecter
         </button>
     </form>
-    <p class="mt-8 text-center text-xs text-optique-gray">Pour toute difficulté, contactez le responsable du magasin.</p>
+    <p class="mt-8 text-center text-xs text-optique-gray">Mot de passe oublié ou difficulté de connexion ? Contactez le responsable du magasin.</p>
 @endsection

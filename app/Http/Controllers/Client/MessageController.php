@@ -8,13 +8,15 @@ use Illuminate\Http\Request;
 
 class MessageController extends Controller
 {
-     public function index(Request $request)
+  public function index(Request $request)
 {
     $customer = Auth::user()->customer;
     $conversations = $customer->conversations()->orderBy('last_message_at', 'desc')->get();
-    $prefillSubject = $request->query('subject'); // <-- Récupère le sujet passé dans l'URL
 
-    return view('client.messages.index', compact('conversations', 'prefillSubject'));
+    $prefillSubject = $request->query('subject');
+    $prefillMessage = $request->query('message'); // <-- AJOUTÉ
+
+    return view('client.messages.index', compact('conversations', 'prefillSubject', 'prefillMessage'));
 }
 
     public function store(Request $request)

@@ -16,7 +16,10 @@
                 @else text-[#A33B36] @endif">
                 {{ ucfirst(str_replace('_', ' ', $order->status)) }}
             </p>
-            <a href="{{ route('client.messages.index', ['subject' => 'Question sur la commande ' . $order->reference]) }}"
+           <a href="{{ route('client.messages.index', [
+    'subject' => 'Question sur la commande ' . $order->reference,
+    'message' => 'Bonjour, j\'aimerais avoir plus d\'informations concernant ma commande ' . $order->reference . '. '
+]) }}"
    class="mt-4 block w-full text-center bg-gray-100 text-[#A33B36] font-medium py-2 rounded-lg hover:bg-gray-200 transition text-sm">
     💬 Contacter l'équipe à propos de cette commande
 </a>
