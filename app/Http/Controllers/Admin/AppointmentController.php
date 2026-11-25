@@ -57,17 +57,24 @@ class AppointmentController extends Controller
     }
 
     public function updateStatus(UpdateAppointmentStatusRequest $request, Appointment $appointment)
-    {
-        if ($appointment->status === 'termine') {
-            return back()->with('error', 'Ce rendez-vous est terminé et ne peut plus être modifié.');
-        }
-
-        $appointment->update([
-            'status'      => $request->status,
-            'proposed_at' => $request->proposed_at ?? $appointment->proposed_at,
-            'comment'     => $request->comment ?? $appointment->comment,
-        ]);
-
-        return redirect()->route('admin.appointments.index')->with('success', 'Rendez-vous mis à jour.');
+{
+    if ($appointment->status === 'termine') {
+        return back()->with('error', 'Ce rendez-vous est terminé et ne peut plus être modifié.');
     }
+
+    $data = [
+        'status'      => $request->status,
+        'proposed_at' => $request->proposed_at ?? $appointment->proposed_at,
+        'comment'     => $request->comment ?? $appointment->comment,
+    ];
+
+    // Si on notifie le client (Confirmation, Déplacement, Annulation)
+    if (in_array($request->status, ['confirme', 'deplace', 'annule'])) {
+        $data['client_notified_at'] = null;
+    }
+
+    $appointment->update($data);
+
+    return redirect()->route('admin.appointments.index')->with('success', 'Rendez-vous mis à jour.');
+}
 }

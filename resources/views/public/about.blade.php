@@ -31,7 +31,16 @@
                     <div class="absolute inset-0 bg-gradient-to-t from-[#211a18]/40 via-transparent to-transparent"></div>
                     <div class="absolute bottom-4 left-4 right-4 flex items-end justify-between text-white sm:bottom-6 sm:left-6 sm:right-6"><div><p class="text-[10px] font-bold uppercase tracking-[.18em] text-white/75">Votre opticien de proximité</p><p class="mt-1 font-serif text-2xl sm:text-3xl">ACI 2000 · Bamako</p></div><span class="grid h-11 w-11 place-items-center rounded-full border border-white/40 bg-white/15 text-xl backdrop-blur-md" aria-hidden="true">✳</span></div>
                 @else
-                    <div class="p-6 text-center"><span class="text-4xl text-optique-red" aria-hidden="true">⌂</span><p class="mt-3 text-xs font-semibold uppercase tracking-[.15em] text-optique-red">Photo du magasin à ajouter</p><p class="mt-1 text-xs text-optique-gray">images/boutique.png</p></div>
+                    <div class="absolute inset-0 grid place-items-center bg-gradient-to-br from-[#faf7f5] via-[#eee5e1] to-[#f8f5f3] p-6 text-center">
+                        <div>
+                            <span class="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-white/80 text-optique-red shadow-sm" aria-hidden="true">
+                                <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M3 12s3-5 9-5 9 5 9 5-3 5-9 5-9-5-9-5Z"/><circle cx="12" cy="12" r="2.5" stroke-width="1.7"/></svg>
+                            </span>
+                            <p class="mt-5 text-[10px] font-bold uppercase tracking-[.18em] text-optique-red">Optique Services</p>
+                            <p class="mt-1 font-serif text-2xl text-optique-text sm:text-3xl">ACI 2000 · Bamako</p>
+                            <p class="mt-2 text-sm text-optique-gray">Votre opticien de proximité</p>
+                        </div>
+                    </div>
                 @endif
             </div>
         </div>
@@ -46,9 +55,18 @@
                     <img src="{{ $teamImage }}" alt="L’équipe d’Optique Services dans la boutique" loading="lazy" decoding="async" class="absolute inset-0 h-full w-full object-cover" onerror="this.style.display='none';">
                     <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#211a18]/55 to-transparent p-5 pt-16 text-white sm:p-7 sm:pt-20"><p class="text-[10px] font-bold uppercase tracking-[.18em] text-white/80">Optique Services</p><p class="mt-1 font-serif text-2xl">Une équipe à votre écoute.</p></div>
                 @else
-                    <div class="absolute inset-0 grid place-items-center bg-gradient-to-br from-[#faf7f5] via-[#eee5e1] to-[#f8f5f3] p-6 text-center">
-                        <div>
-                            <svg class="mx-auto h-16 w-16 text-[#9e645e]/70" viewBox="0 0 64 40" fill="none" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 19c1-7 5-11 13-11h9c6 0 8 3 9 8 1-5 3-8 9-8h5c8 0 12 4 13 11-1 9-5 13-13 13-7 0-11-5-13-13-2 8-6 13-13 13C8 32 4 28 3 19Z"/><path stroke-linecap="round" stroke-width="2.5" d="M25 9c2-3 4-4 9-4s7 1 9 4M3 18H1m62 0h-2"/></svg>
+                    <div class="absolute inset-0 grid place-items-center bg-gradient-to-br from-[#faf7f5] via-[#eee5e1] to-[#f8f5f3] p-5 sm:p-7">
+                        <div class="w-full max-w-sm rounded-[1.5rem] border border-white/80 bg-white/65 p-6 text-center shadow-sm backdrop-blur-sm sm:p-8">
+                            <span class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-[#fbefed] text-optique-red" aria-hidden="true">
+                                <svg class="h-8 w-8" viewBox="0 0 64 40" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 19c1-7 5-11 13-11h9c6 0 8 3 9 8 1-5 3-8 9-8h5c8 0 12 4 13 11-1 9-5 13-13 13-7 0-11-5-13-13-2 8-6 13-13 13C8 32 4 28 3 19Z"/><path stroke-linecap="round" stroke-width="2.5" d="M25 9c2-3 4-4 9-4s7 1 9 4M3 18H1m62 0h-2"/></svg>
+                            </span>
+                            <p class="mt-4 text-[10px] font-bold uppercase tracking-[.18em] text-optique-red">Optique Services</p>
+                            <p class="mt-2 font-serif text-2xl leading-tight text-optique-text sm:text-3xl">Un conseil qui part de vous.</p>
+                            <div class="mt-5 flex flex-wrap justify-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-optique-gray sm:text-xs">
+                                <span class="rounded-full border border-optique-border bg-white/80 px-3 py-1.5">Écoute</span>
+                                <span class="rounded-full border border-optique-border bg-white/80 px-3 py-1.5">Conseil</span>
+                                <span class="rounded-full border border-optique-border bg-white/80 px-3 py-1.5">Proximité</span>
+                            </div>
                         </div>
                     </div>
                 @endif

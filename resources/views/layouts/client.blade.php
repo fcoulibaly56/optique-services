@@ -23,14 +23,26 @@
             </form>
         </div>
     </header>
-
-    <!-- Contenu Principal -->
-    <main class="flex-1 overflow-y-auto p-4 pb-24">
+    <!-- Conteneur des Toasts -->
+    <div class="fixed top-20 right-4 z-50 space-y-2 w-11/12 max-w-sm">
         @if(session('success'))
-            <div class="bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg mb-4 text-sm">
+            <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)" x-transition
+                class="bg-green-500 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 text-sm font-medium">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                 {{ session('success') }}
             </div>
         @endif
+        @if(session('error'))
+            <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)" x-transition
+                class="bg-red-500 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 text-sm font-medium">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                {{ session('error') }}
+            </div>
+        @endif
+    </div>
+
+    <!-- Contenu Principal -->
+    <main class="flex-1 overflow-y-auto p-4 pb-24">
         @if($errors->any())
             <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-3 rounded mb-4 text-sm">
                 @foreach($errors->all() as $error) <p>{{ $error }}</p> @endforeach
@@ -39,7 +51,6 @@
 
         @yield('content')
     </main>
-
     <!-- Bottom Navigation (Mobile) -->
     <nav class="fixed bottom-0 w-full bg-white border-t border-gray-200 h-16 flex justify-around items-center pb-safe z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
         <a href="{{ route('client.dashboard') }}" class="flex flex-col items-center gap-1 {{ request()->routeIs('client.dashboard') ? 'text-[#A33B36]' : 'text-gray-400 hover:text-gray-600' }}">
@@ -50,10 +61,23 @@
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
             <span class="text-[10px] font-medium">Commandes</span>
         </a>
-        <a href="{{ route('client.appointments.index') }}" class="flex flex-col items-center gap-1 {{ request()->routeIs('client.appointments*') ? 'text-[#A33B36]' : 'text-gray-400 hover:text-gray-600' }}">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-            <span class="text-[10px] font-medium">Rendez-vous</span>
-        </a>
+        <a href="{{ route('client.appointments.index') }}" class="relative flex flex-col items-center gap-1 {{ request()->routeIs('client.appointments*') ? 'text-[#A33B36]' : 'text-gray-400 hover:text-gray-600' }}">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+    <span class="text-[10px] font-medium">Rendez-vous</span>
+    @php
+        $apptCount = Auth::user()->customer
+            ? \App\Models\Appointment::where('customer_id', Auth::user()->customer->id)
+                ->whereIn('status', ['confirme', 'deplace', 'annule'])
+                ->whereNull('client_notified_at')
+                ->count()
+            : 0;
+    @endphp
+    @if($apptCount > 0)
+        <span id="client-appt-badge" class="absolute top-0 right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">{{ $apptCount }}</span>
+    @else
+        <span id="client-appt-badge" class="hidden"></span>
+    @endif
+</a>
            <a href="{{ route('client.messages.index') }}" class="relative flex flex-col items-center gap-1 {{ request()->routeIs('client.messages*') ? 'text-[#A33B36]' : 'text-gray-400 hover:text-gray-600' }}">
     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
     <span class="text-[10px] font-medium">Messages</span>
@@ -64,39 +88,50 @@
     @endif
 </a>
     </nav>
-    <script>
-    document.addEventListener('alpine:init', () => {
-        setInterval(async () => {
-            try {
-                const response = await fetch('{{ route('api.unread') }}');
-                const data = await response.json();
+       <script>
+        document.addEventListener('DOMContentLoaded', () => {
 
-                // Mise à jour côté Admin
-                const adminBadge = document.getElementById('admin-unread-badge');
-                if (adminBadge) {
-                    if (data.count > 0) {
-                        adminBadge.textContent = data.count;
-                        adminBadge.classList.remove('hidden');
-                    } else {
-                        adminBadge.classList.add('hidden');
-                    }
-                }
+            // 1. Mise à jour des badges toutes les 30 secondes (sans recharger)
+            setInterval(async () => {
+                try {
+                    const response = await fetch('{{ route("api.unread") }}');
+                    const data = await response.json();
 
-                // Mise à jour côté Client
-                const clientBadge = document.getElementById('client-unread-badge');
-                if (clientBadge) {
-                    if (data.count > 0) {
-                        clientBadge.textContent = data.count;
-                        clientBadge.classList.remove('hidden');
-                    } else {
-                        clientBadge.classList.add('hidden');
+                    // Badge Messages
+                    const msgBadge = document.getElementById('client-unread-badge');
+                    if (msgBadge) {
+                        if (data.messages > 0) {
+                            msgBadge.textContent = data.messages;
+                            msgBadge.classList.remove('hidden');
+                        } else {
+                            msgBadge.classList.add('hidden');
+                        }
                     }
+
+                    // Badge Rendez-vous
+                    const apptBadge = document.getElementById('client-appt-badge');
+                    if (apptBadge) {
+                        if (data.appointments > 0) {
+                            apptBadge.textContent = data.appointments;
+                            apptBadge.classList.remove('hidden');
+                        } else {
+                            apptBadge.classList.add('hidden');
+                        }
+                    }
+                } catch (e) {
+                    console.error('Erreur de mise à jour des badges', e);
                 }
-            } catch (e) {
-                console.error('Erreur polling messages', e);
-            }
-        }, 30000); // Vérifie toutes les 30 secondes
-    });
-</script>
+            }, 30000); // Toutes les 30 secondes
+
+            // 2. Rafraîchissement automatique de la page (uniquement sur le Dashboard et RDV)
+            @if(request()->routeIs('client.dashboard') || request()->routeIs('client.appointments.index'))
+                setTimeout(() => {
+                    window.location.reload();
+                }, 60000); // Recharge la page après 60 secondes
+            @endif
+
+        });
+    </script>
+
 </body>
 </html>

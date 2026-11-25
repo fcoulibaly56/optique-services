@@ -14,9 +14,6 @@ class ShopDataSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Assurances
-        Insurance::firstOrCreate(['name' => 'AMO'], ['coverage_percentage' => 80]);
-        Insurance::firstOrCreate(['name' => 'Allianz'], ['coverage_percentage' => 70]);
 
         // 2. Catégories
         $catHomme = Category::firstOrCreate(['slug' => 'homme'], ['name' => 'Homme', 'type' => 'frame']);

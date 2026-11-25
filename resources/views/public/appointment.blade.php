@@ -20,9 +20,58 @@
 
         <div class="mx-auto mt-8 grid max-w-5xl gap-6 lg:mt-12 lg:grid-cols-[minmax(0,1fr)_17rem] lg:items-start">
             <div class="overflow-hidden rounded-[1.75rem] border border-optique-border bg-white shadow-xl shadow-[#593b35]/[.06] sm:rounded-[2rem]" data-reveal>
-                @if(session('success'))
-                    <div class="p-6 sm:p-10"><div role="status" class="rounded-3xl border border-green-200 bg-green-50 p-6 text-center sm:p-8"><span class="mx-auto grid h-14 w-14 place-items-center rounded-full bg-white text-2xl text-green-600 shadow-sm" aria-hidden="true">✓</span><h2 class="mt-4 font-serif text-2xl text-green-900">Demande envoyée</h2><p class="mt-2 text-sm leading-6 text-green-800">{{ session('success') }}</p><p class="mt-2 text-xs text-green-700">Votre rendez-vous sera confirmé par l’équipe selon les disponibilités.</p><a href="{{ \Illuminate\Support\Facades\Route::has('home') ? route('home') : url('/') }}" class="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-optique-text shadow-sm transition hover:text-optique-red">Retour à l’accueil <span aria-hidden="true">→</span></a></div></div>
+                     @if(session('success'))
+                    <div class="p-6 sm:p-10">
+                        <div role="status" class="rounded-3xl border border-green-200 bg-green-50 p-6 text-center sm:p-8">
+                            <span class="mx-auto grid h-14 w-14 place-items-center rounded-full bg-white text-2xl text-green-600 shadow-sm" aria-hidden="true">✓</span>
+                            <h2 class="mt-4 font-serif text-2xl text-green-900">Demande envoyée !</h2>
+                            <p class="mt-2 text-sm leading-6 text-green-800">{{ session('success') }}</p>
+
+                            @if(session('appointment_reference'))
+                                <div class="mt-6 rounded-xl bg-white border-2 border-dashed border-green-300 p-4">
+                                    <p class="text-xs uppercase font-bold text-gray-500 tracking-wide mb-2">Votre numéro de suivi</p>
+                                    <p id="rdv-reference" class="text-2xl font-bold text-[#A33B36] tracking-wider">{{ session('appointment_reference') }}</p>
+                                    <button type="button" onclick="copierReference()" class="mt-2 text-xs text-blue-600 hover:underline">
+                                        📋 Copier le numéro
+                                    </button>
+                                </div>
+
+                                <div class="mt-4 space-y-2 text-left">
+                                    <a href="{{ route('appointment.track') }}"
+                                       class="block w-full text-center bg-[#A33B36] text-white py-3 rounded-xl font-semibold hover:bg-[#8F302C] transition text-sm">
+                                        🔍 Suivre mon rendez-vous
+                                    </a>
+                                    @if(session('appointment_phone'))
+                                        <a href="https://wa.me/22376882712?text={{ rawurlencode('Bonjour, je viens de prendre un RDV. Ma référence est : ' . session('appointment_reference')) }}"
+                                           target="_blank"
+                                           class="block w-full text-center bg-green-500 text-white py-3 rounded-xl font-semibold hover:bg-green-600 transition text-sm">
+                                            💬 Envoyer la référence sur WhatsApp
+                                        </a>
+                                        @if(!session('has_account'))
+                                            <a href="{{ route('login.phone') }}"
+                                               class="block w-full text-center border border-gray-300 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-50 transition text-sm">
+                                                🔐 Créer mon compte pour les notifications
+                                            </a>
+                                        @endif
+                                    @endif
+                                </div>
+                            @endif
+
+                            <p class="mt-4 text-xs text-green-700">L'équipe vous contactera pour confirmer votre rendez-vous.</p>
+                            <a href="{{ route('home') }}" class="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-[#A33B36]">← Retour à l'accueil</a>
+                        </div>
+                    </div>
+
+                    <script>
+                        function copierReference() {
+                            const ref = document.getElementById('rdv-reference').textContent;
+                            navigator.clipboard.writeText(ref).then(() => {
+                                alert('Référence copiée : ' + ref);
+                            });
+                        }
+                    </script>
                 @else
+                    
                     <form id="appointment-form" data-initial-step="{{ $initialStep }}" action="{{ route('appointment.store') }}" method="POST" class="p-5 sm:p-8 lg:p-10" novalidate>
                         @csrf
                         @if($errors->any())<div role="alert" class="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"><p class="font-semibold">Il reste quelques informations à corriger.</p><ul class="mt-2 list-inside list-disc">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
@@ -52,7 +101,12 @@
                             <div class="mb-5"><p class="text-xs font-bold uppercase tracking-[.16em] text-optique-red">Étape 2 sur 3</p><h2 tabindex="-1" class="mt-2 font-serif text-2xl sm:text-3xl">Quand souhaitez-vous venir ?</h2><p class="mt-2 text-sm text-optique-gray">Choisissez une date et un créneau à proposer à l’équipe.</p></div>
                             <div class="grid gap-5 sm:grid-cols-2">
                                 <div><label for="date" class="mb-2 block text-sm font-semibold">Date souhaitée <span class="text-optique-red">*</span></label><input type="date" name="date" id="date" value="{{ old('date') }}" required class="block min-h-12 w-full rounded-xl border border-optique-border bg-[#fcfaf9] px-4 py-3 text-sm outline-none transition focus:border-optique-red focus:bg-white focus:ring-4 focus:ring-optique-red/10">@error('date')<p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>@enderror</div>
-                                <div><label for="time" class="mb-2 block text-sm font-semibold">Créneau souhaité <span class="text-optique-red">*</span></label><select name="time" id="time" required class="block min-h-12 w-full rounded-xl border border-optique-border bg-[#fcfaf9] px-4 py-3 text-sm outline-none transition focus:border-optique-red focus:bg-white focus:ring-4 focus:ring-optique-red/10"><option value="">Choisir un créneau</option>@foreach(['09:00','10:00','11:00','14:00','15:00','16:00','17:00'] as $time)<option value="{{ $time }}" {{ old('time') === $time ? 'selected' : '' }}>{{ $time }}</option>@endforeach</select>@error('time')<p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+                                <div><label for="time" class="mb-2 block text-sm font-semibold">Créneau souhaité <span class="text-optique-red">*</span></label><select name="time" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-[#A33B36] focus:ring-[#A33B36]">
+    <option value="">Choisir un créneau...</option>
+    @foreach(config('shop.appointment_slots') as $slot)
+        <option value="{{ $slot }}">{{ $slot }}</option>
+    @endforeach
+</select> @error('time')<p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>@enderror</div>
                             </div>
                             <p class="mt-4 rounded-xl bg-[#fbf8f6] p-3 text-xs leading-5 text-optique-gray"><span class="font-semibold text-optique-text">À noter :</span> le créneau demandé sera confirmé par le magasin selon les disponibilités.</p>
                             <div class="mt-8 flex items-center justify-between"><button type="button" data-step-back="2" class="rounded-full px-4 py-3 text-sm font-semibold text-optique-gray transition hover:bg-optique-bg hover:text-optique-text">← Retour</button><button type="button" data-step-next="2" class="group inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-optique-red px-6 py-3 text-sm font-bold text-white shadow-md shadow-optique-red/15 transition duration-300 hover:-translate-y-0.5 hover:bg-optique-redhover">Continuer <span class="transition-transform group-hover:translate-x-1" aria-hidden="true">→</span></button></div>
@@ -74,7 +128,15 @@
 
             <aside class="space-y-4" data-reveal>
                 <div class="rounded-3xl border border-optique-border bg-white p-5 shadow-sm sm:p-6"><span class="grid h-11 w-11 place-items-center rounded-2xl bg-[#fbefed] text-optique-red"><svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 2"/></svg></span><h2 class="mt-4 font-serif text-xl">Demande, puis confirmation</h2><p class="mt-2 text-sm leading-6 text-optique-gray">L’heure choisie est une préférence. L’équipe vous contactera pour confirmer le rendez-vous.</p></div>
-                <div class="rounded-3xl bg-[#8f403c] p-5 text-white sm:p-6"><p class="text-xs font-bold uppercase tracking-[.16em] text-white/70">Besoin d’aide ?</p><h2 class="mt-2 font-serif text-xl">On peut aussi en parler.</h2><p class="mt-2 text-sm leading-6 text-white/80">Appelez l’équipe si vous préférez organiser votre visite directement.</p><a href="tel:+22376882712" class="mt-4 inline-flex items-center gap-2 text-sm font-bold">76 88 27 12 <span aria-hidden="true">↗</span></a></div>
+                <div class="rounded-3xl bg-[#8f403c] p-5 text-white sm:p-6"><p class="text-xs font-bold uppercase tracking-[.16em] text-white/70">Besoin d’aide ?</p><h2 class="mt-2 font-serif text-xl">On peut aussi en parler.</h2><p class="mt-2 text-sm leading-6 text-white/80">Appelez l’équipe si vous préférez organiser votre visite directement.</p>
+<div class="mt-4 space-y-2">
+    @foreach(config('shop.phones') as $phone)
+        <a href="tel:{{ $phone['tel'] }}" class="flex items-center gap-2 text-sm font-bold hover:underline">
+            {{ $phone['display'] }} <span aria-hidden="true">↗</span>
+        </a>
+    @endforeach
+</div>
+            </div>
             </aside>
         </div>
     </div>

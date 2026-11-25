@@ -150,8 +150,8 @@ class OrderController extends Controller
             'discount' => 'nullable|numeric|min:0',
             'insurance_id' => 'nullable|exists:insurances,id',
             'deposit_amount' => 'nullable|numeric|min:0',
-            'delivery_date' => 'nullable|date',
-            'lens_type' => 'nullable|string', // <--- AJOUTÉ
+            'delivery_date' => 'nullable|date|after_or_equal:today',
+            'lens_type' => 'nullable|string',
         ]);
 
         // Gestion simple du PEC pour l'édition

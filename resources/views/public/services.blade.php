@@ -59,6 +59,13 @@
             </div>
         </article>
     @endforeach
+      <a href="{{ \Illuminate\Support\Facades\Route::has('vision') ? route('vision') : url('/troubles-de-la-vision') }}" class="group mt-6 flex flex-col gap-4 rounded-2xl border border-[#EAD9D7] bg-[#fbf8f6] p-5 transition duration-300 hover:-translate-y-0.5 hover:border-[#dcb4af] hover:shadow-lg sm:flex-row sm:items-center sm:justify-between sm:p-6">
+        <span class="flex items-start gap-4">
+            <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#fbefed] text-optique-red" aria-hidden="true"><svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.7"><path stroke-linecap="round" stroke-linejoin="round" d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="2.5"/></svg></span>
+            <span><span class="block font-serif text-xl text-optique-text">Comprendre les troubles de la vision</span><span class="mt-1 block max-w-2xl text-sm leading-6 text-optique-gray">Myopie, hypermétropie, astigmatisme, presbytie : des repères simples sur les corrections optiques possibles.</span></span>
+        </span>
+        <span class="inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-optique-red transition group-hover:gap-3">Découvrir <span aria-hidden="true">→</span></span>
+    </a>
 </section>
 
 {{-- Bande finale --}}

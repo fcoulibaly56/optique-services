@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\AccountingController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PurchaseController;
 use App\Http\Controllers\Admin\InsuranceController;
+use App\Http\Controllers\Public\AppointmentTrackingController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\SuperAdmin\UserController as SuperAdminUserController;
 use App\Http\Controllers\Admin\CustomerController;
@@ -28,21 +29,19 @@ Route::get('/montures/{product:slug}', [ProductController::class, 'show'])->name
 Route::get('/services', [PageController::class, 'services'])->name('services');
 Route::get('/a-propos', [PageController::class, 'about'])->name('about');
 Route::get('/contact', [PageController::class, 'contact'])->name('contact');
+// Dans les routes publiques
+Route::get('/comprendre-la-vision', [\App\Http\Controllers\Public\PageController::class, 'vision'])->name('vision');
 Route::post('/contact', [PageController::class, 'contactStore'])->name('contact.store')->middleware('throttle:6,1');
 
-Route::get('/rendez-vous', [PublicAppointmentController::class, 'create'])->name('appointment.create')->middleware('throttle:6,1')  ;
-Route::post('/rendez-vous', [PublicAppointmentController::class, 'store'])->name('appointment.store');
+Route::get('/rendez-vous', [PublicAppointmentController::class, 'create'])->name('appointment.create') ;
+Route::post('/rendez-vous', [PublicAppointmentController::class, 'store'])->name('appointment.store')->middleware('throttle:6,1') ;
+Route::get('/suivi-rendez-vous', [\App\Http\Controllers\Public\AppointmentTrackingController::class, 'show'])->name('appointment.track');
+Route::post('/suivi-rendez-vous', [\App\Http\Controllers\Public\AppointmentTrackingController::class, 'track'])->name('appointment.track.search')->middleware('throttle:10,1');
 
 // ---------- ESPACE SUPER-ADMIN ----------
 
  Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->name('superadmin.')->group(function () {
     Route::get('/', [SuperAdminDashboard::class, 'index'])->name('dashboard');
-
-    // Catalogue
-    Route::patch('products/{product}/visibility', [SuperAdminProductController::class, 'toggleVisibility'])
-        ->name('products.toggle-visibility');
-    Route::resource('products', SuperAdminProductController::class)->except(['show']);
-    //galerie
     Route::patch('gallery/{galleryItem}/visibility', [GalleryItemController::class, 'toggleVisibility'])
     ->name('gallery.toggle-visibility');
 Route::resource('gallery', GalleryItemController::class)
@@ -132,18 +131,35 @@ Route::middleware(['auth', 'role:client'])->prefix('mon-espace')->name('client.'
     Route::post('/messages', [\App\Http\Controllers\Client\MessageController::class, 'store'])->name('messages.store'); // <-- AJOUTÉ
     Route::get('/messages/{conversation}', [\App\Http\Controllers\Client\MessageController::class, 'show'])->name('messages.show');
     Route::post('/messages/{conversation}/reply', [\App\Http\Controllers\Client\MessageController::class, 'reply'])->name('messages.reply');
+});
 
-    Route::middleware(['auth'])->get('/api/unread-count', function () {
+ Route::middleware(['auth'])->get('/api/unread-count', function () {
     $user = Auth::user();
+
+    // Messages
     if ($user->role === 'client' && $user->customer) {
-        $count = \App\Models\Message::where('sender_role', 'staff')
+        $messagesCount = \App\Models\Message::where('sender_role', 'staff')
             ->whereHas('conversation', fn($q) => $q->where('customer_id', $user->customer->id))
             ->whereDoesntHave('reads', fn($q) => $q->where('user_id', $user->id))->count();
+
+        $appointmentsCount = \App\Models\Appointment::where('customer_id', $user->customer->id)
+            ->whereIn('status', ['confirme', 'deplace', 'annule'])
+            ->whereNull('client_notified_at')
+            ->count();
     } else {
-        $count = \App\Models\Message::where('sender_role', 'client')
+        $messagesCount = \App\Models\Message::where('sender_role', 'client')
             ->whereDoesntHave('reads', fn($q) => $q->where('user_id', $user->id))->count();
+        $appointmentsCount = 0;
     }
-    return response()->json(['count' => $count]);
+
+    return response()->json([
+        'messages' => $messagesCount,
+        'appointments' => $appointmentsCount,
+        'count' => $messagesCount, // Pour compatibilité admin
+    ]);
 })->name('api.unread');
-    });
+
 require __DIR__.'/auth.php';
+
+// Ensure all route groups are properly closed
+

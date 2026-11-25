@@ -11,10 +11,17 @@ class MessageController extends Controller
   public function index(Request $request)
 {
     $customer = Auth::user()->customer;
-    $conversations = $customer->conversations()->orderBy('last_message_at', 'desc')->get();
+
+    $conversations = $customer->conversations()
+        ->withCount(['messages as unread_count' => function($q) {
+            $q->where('sender_role', 'staff')
+              ->whereDoesntHave('reads', fn($r) => $r->where('user_id', Auth::id()));
+        }])
+        ->orderBy('last_message_at', 'desc')
+        ->get();
 
     $prefillSubject = $request->query('subject');
-    $prefillMessage = $request->query('message'); // <-- AJOUTÉ
+    $prefillMessage = $request->query('message');
 
     return view('client.messages.index', compact('conversations', 'prefillSubject', 'prefillMessage'));
 }

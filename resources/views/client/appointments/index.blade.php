@@ -54,8 +54,14 @@
                 <p class="text-sm text-gray-600">
                     📅 Date demandée : <strong>{{ \Carbon\Carbon::parse($app->requested_at)->format('d/m/Y à H:i') }}</strong>
                 </p>
-                @if($app->status == 'deplace' && $app->proposed_at)
-                    <p class="text-sm text-purple-600 mt-1">L'équipe propose : {{ \Carbon\Carbon::parse($app->proposed_at)->format('d/m/Y à H:i') }}</p>
+                                 @if($app->status == 'deplace' && $app->proposed_at)
+                    <div class="mt-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+            <p class="text-sm text-purple-800 font-medium">L'équipe propose : {{ \Carbon\Carbon::parse($app->proposed_at)->format('d/m/Y à H:i') }}</p>
+                        <a href="{{ route('client.messages.index', ['subject' => 'Concernant le déplacement de mon RDV ' . $app->reference, 'message' => 'Bonjour, je viens de voir que mon rendez-vous a été déplacé. ']) }}"
+                           class="mt-2 inline-block text-xs font-bold text-purple-700 underline hover:text-purple-900">
+                           💬 Discuter de ce changement avec l'équipe
+                        </a>
+                    </div>
                 @endif
                 @if($app->comment)
                     <p class="text-xs text-gray-500 mt-2 italic">"{{ $app->comment }}"</p>

@@ -9,10 +9,18 @@
     $productsUrl = \Illuminate\Support\Facades\Route::has('products.index') ? route('products.index') : '#collection';
     $servicesUrl = \Illuminate\Support\Facades\Route::has('services') ? route('services') : '#services';
     $contactUrl = \Illuminate\Support\Facades\Route::has('contact') ? route('contact') : '#contact';
-     $preferredHeroPath = 'images/montures/hero-monture.jpg';
-    $heroImage = is_file(public_path($preferredHeroPath))
-        ? asset($preferredHeroPath)
-        : ($montures[0]['url'] ?? null);
+    $montureConfig = config('montures', []);
+    $montures = array_values(array_filter($montureConfig['items'] ?? [], function ($monture) {
+        $image = basename($monture['image'] ?? '');
+        return preg_match('/^monture-[a-z0-9_-]+\\.(?:jpe?g|png|webp)$/i', $image)
+            && is_file(public_path('images/montures/' . $image));
+    }));
+    $montureFilters = $montureConfig['filters'] ?? [];
+    $filterLabelMap = array_column($montureFilters, 'label', 'key');
+    $preferredHeroPath = 'images/montures/hero-monture.jpg';
+    $firstMonturePath = !empty($montures) ? 'images/montures/' . basename($montures[0]['image']) : null;
+    $heroImagePath = is_file(public_path($preferredHeroPath)) ? $preferredHeroPath : $firstMonturePath;
+    $heroImage = $heroImagePath ? asset($heroImagePath) : null;
 @endphp
 
 <section class="relative isolate overflow-hidden bg-[#fbf8f6]">
@@ -53,7 +61,7 @@
 
 <section id="collection" class="scroll-mt-24 py-16 sm:py-24">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-col justify-between gap-5 sm:flex-row sm:items-end" data-reveal><div class="max-w-2xl"><p class="text-xs font-bold uppercase tracking-[.2em] text-optique-red">À chacun son regard</p><h2 class="mt-3 font-serif text-3xl leading-tight tracking-tight sm:text-4xl lg:text-5xl">Nos montures, vos coups de cœur.</h2><p class="mt-3 max-w-xl text-sm leading-6 text-optique-gray sm:text-base">Découvrez quelques modèles disponibles en boutique. Passez les essayer et parlons ensemble de ce qui vous convient.</p></div><div class="flex items-center gap-4"><a href="{{ $productsUrl }}" class="group inline-flex w-fit items-center gap-2 border-b border-optique-red pb-1 text-sm font-semibold text-optique-red">Tout le catalogue <span class="transition-transform group-hover:translate-x-1" aria-hidden="true">→</span></a><div data-carousel-controls class="hidden items-center gap-2" role="group" aria-label="Navigation dans les montures"><button type="button" data-carousel-toggle aria-label="Mettre le défilement automatique en pause" aria-pressed="true" aria-controls="home-monture-carousel" class="grid h-11 w-11 place-items-center rounded-full border border-optique-border bg-white text-sm font-bold text-optique-text shadow-sm transition hover:border-optique-red hover:text-optique-red"><span data-rotation-pause aria-hidden="true">Ⅱ</span><span data-rotation-play aria-hidden="true" hidden>▶</span></button><button type="button" data-carousel-prev aria-label="Montures précédentes" aria-controls="home-monture-carousel" class="grid h-11 w-11 place-items-center rounded-full border border-optique-border bg-white text-lg text-optique-text shadow-sm transition hover:border-optique-red hover:text-optique-red disabled:cursor-not-allowed disabled:opacity-40">←</button><button type="button" data-carousel-next aria-label="Montures suivantes" aria-controls="home-monture-carousel" class="grid h-11 w-11 place-items-center rounded-full border border-optique-border bg-white text-lg text-optique-text shadow-sm transition hover:border-optique-red hover:text-optique-red disabled:cursor-not-allowed disabled:opacity-40">→</button></div></div></div>
+        <div class="flex flex-col justify-between gap-5 sm:flex-row sm:items-end" data-reveal><div class="max-w-2xl"><p class="text-xs font-bold uppercase tracking-[.2em] text-optique-red">À chacun son regard</p><h2 class="mt-3 font-serif text-3xl leading-tight tracking-tight sm:text-4xl lg:text-5xl">Nos montures, vos coups de cœur.</h2><p class="mt-3 max-w-xl text-sm leading-6 text-optique-gray sm:text-base">Découvrez quelques modèles disponibles en boutique. Passez les essayer et parlons ensemble de ce qui vous convient.</p></div><div class="flex items-center gap-4"><a href="{{ $productsUrl }}" class="group inline-flex w-fit items-center gap-2 border-b border-optique-red pb-1 text-sm font-semibold text-optique-red">Tout le catalogue <span class="transition-transform group-hover:translate-x-1" aria-hidden="true">→</span></a></div></div>
         <div class="mt-7 flex flex-col gap-4 sm:mt-9 sm:flex-row sm:items-center sm:justify-between">
         <div class="flex gap-2 overflow-x-auto pb-2" role="group" aria-label="Filtrer les montures">
             @foreach($montureFilters as $filter)
@@ -66,8 +74,9 @@
         <div id="home-monture-carousel" data-product-carousel tabindex="0" role="region" aria-label="Montures disponibles en boutique" aria-roledescription="carrousel" class="mt-5 -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain px-4 pb-4 scroll-smooth motion-reduce:scroll-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-optique-red sm:mx-0 sm:mt-7 sm:gap-5 sm:px-0">
             @foreach($montures as $index => $monture)
                 @php
-                                         $photoName = basename($monture['image']);
-                    $photoUrl = $monture['url'];
+                    $photoName = basename($monture['image']);
+                    $photoPath = 'images/montures/' . $photoName;
+                    $photoUrl = is_file(public_path($photoPath)) ? asset($photoPath) : null;
                     $filterKeys = array_values(array_unique(array_filter(array_merge($monture['audiences'] ?? [], $monture['types'] ?? [], $monture['styles'] ?? []))));
                     $filterLabels = array_values(array_filter(array_map(fn ($key) => $filterLabelMap[$key] ?? null, $filterKeys)));
                     $searchText = implode(' ', array_filter(array_merge([$monture['name'] ?? '', $monture['note'] ?? ''], $filterLabels)));
@@ -120,42 +129,21 @@
     const track = document.querySelector('[data-product-carousel]');
     if (!track) return;
 
-    const controls = document.querySelector('[data-carousel-controls]');
-    const previous = document.querySelector('[data-carousel-prev]');
-    const next = document.querySelector('[data-carousel-next]');
-    const rotationToggle = document.querySelector('[data-carousel-toggle]');
-    const pauseIcon = document.querySelector('[data-rotation-pause]');
-    const playIcon = document.querySelector('[data-rotation-play]');
     const status = document.querySelector('[data-carousel-status]');
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let rotationEnabled = !reduceMotion;
     let hoverPaused = false;
     let focusWithin = false;
+    let interactionPaused = false;
     let rotationTimer = null;
+    let interactionTimer = null;
 
-    const updateRotationButton = () => {
-        if (!rotationToggle) return;
-        rotationToggle.hidden = reduceMotion;
-        rotationToggle.setAttribute('aria-pressed', String(rotationEnabled));
-        rotationToggle.setAttribute('aria-label', rotationEnabled ? 'Mettre le défilement automatique en pause' : 'Reprendre le défilement automatique');
-        if (pauseIcon) pauseIcon.hidden = !rotationEnabled;
-        if (playIcon) playIcon.hidden = rotationEnabled;
-    };
-
-    const updateControls = () => {
-        const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth);
-        const hasOverflow = maxScroll > 4;
-        if (controls) controls.classList.toggle('hidden', !hasOverflow);
-        if (previous) previous.disabled = !hasOverflow || track.scrollLeft <= 2;
-        if (next) next.disabled = !hasOverflow || track.scrollLeft >= maxScroll - 2;
-        updateRotationButton();
-    };
+    const hasOverflow = () => track.scrollWidth - track.clientWidth > 4;
 
     const syncRotation = () => {
         window.clearInterval(rotationTimer);
         rotationTimer = null;
-        const hasOverflow = track.scrollWidth - track.clientWidth > 4;
-        if (!rotationEnabled || reduceMotion || hoverPaused || focusWithin || document.hidden || !hasOverflow) return;
+        if (reduceMotion || hoverPaused || focusWithin || interactionPaused || document.hidden || !hasOverflow()) return;
+
         rotationTimer = window.setInterval(() => {
             const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth);
             if (track.scrollLeft >= maxScroll - 3) {
@@ -166,10 +154,14 @@
         }, 5000);
     };
 
-    const stopForInteraction = () => {
-        rotationEnabled = false;
+    const pauseBriefly = () => {
+        interactionPaused = true;
         syncRotation();
-        updateRotationButton();
+        window.clearTimeout(interactionTimer);
+        interactionTimer = window.setTimeout(() => {
+            interactionPaused = false;
+            syncRotation();
+        }, 1600);
     };
 
     const move = direction => {
@@ -178,66 +170,44 @@
         if (status) status.textContent = direction > 0 ? 'Défilement vers les montures suivantes.' : 'Défilement vers les montures précédentes.';
     };
 
-    previous?.addEventListener('click', () => { stopForInteraction(); move(-1); });
-    next?.addEventListener('click', () => { stopForInteraction(); move(1); });
-    rotationToggle?.addEventListener('click', () => {
-        rotationEnabled = !rotationEnabled;
-        syncRotation();
-        updateRotationButton();
-    });
-    track.addEventListener('scroll', () => window.requestAnimationFrame(updateControls), { passive: true });
     track.addEventListener('mouseenter', () => { hoverPaused = true; syncRotation(); });
     track.addEventListener('mouseleave', () => { hoverPaused = false; syncRotation(); });
-    track.addEventListener('pointerdown', stopForInteraction, { passive: true });
-    track.addEventListener('wheel', stopForInteraction, { passive: true });
-    track.addEventListener('focusin', () => {
-        focusWithin = true;
-        rotationEnabled = false;
-        syncRotation();
-        updateRotationButton();
-    });
+    track.addEventListener('pointerdown', () => { interactionPaused = true; syncRotation(); }, { passive: true });
+    track.addEventListener('pointerup', pauseBriefly, { passive: true });
+    track.addEventListener('pointercancel', pauseBriefly, { passive: true });
+    track.addEventListener('wheel', pauseBriefly, { passive: true });
+    track.addEventListener('focusin', () => { focusWithin = true; syncRotation(); });
     track.addEventListener('focusout', event => {
         if (!track.contains(event.relatedTarget)) { focusWithin = false; syncRotation(); }
     });
     track.addEventListener('keydown', event => {
         if (event.target !== track) return;
-        if (event.key === 'ArrowRight') { event.preventDefault(); stopForInteraction(); move(1); }
-        if (event.key === 'ArrowLeft') { event.preventDefault(); stopForInteraction(); move(-1); }
-    });
-
-    controls?.addEventListener('focusin', event => {
-        focusWithin = true;
-        if (event.target !== rotationToggle) rotationEnabled = false;
-        syncRotation();
-        updateRotationButton();
-    });
-    controls?.addEventListener('focusout', event => {
-        if (!controls.contains(event.relatedTarget)) { focusWithin = false; syncRotation(); }
+        if (event.key === 'ArrowRight') { event.preventDefault(); pauseBriefly(); move(1); }
+        if (event.key === 'ArrowLeft') { event.preventDefault(); pauseBriefly(); move(-1); }
     });
 
     const filters = document.querySelectorAll('[data-category-filter], [data-product-search], [data-reset-products]');
     filters.forEach(control => control.addEventListener('click', () => {
-        stopForInteraction();
+        pauseBriefly();
         track.scrollTo({ left: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
-        window.requestAnimationFrame(updateControls);
+        window.requestAnimationFrame(syncRotation);
     }));
     document.querySelector('[data-product-search]')?.addEventListener('input', () => {
-        stopForInteraction();
+        pauseBriefly();
         track.scrollTo({ left: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
-        window.requestAnimationFrame(updateControls);
+        window.requestAnimationFrame(syncRotation);
     });
 
     if ('MutationObserver' in window) {
         const visibilityObserver = new MutationObserver(() => {
             track.scrollTo({ left: 0, behavior: 'auto' });
-            window.requestAnimationFrame(updateControls);
+            window.requestAnimationFrame(syncRotation);
         });
         visibilityObserver.observe(track, { attributes: true, attributeFilter: ['hidden'], subtree: true });
     }
 
     document.addEventListener('visibilitychange', syncRotation);
-    window.addEventListener('resize', () => { updateControls(); syncRotation(); }, { passive: true });
-    updateControls();
+    window.addEventListener('resize', syncRotation, { passive: true });
     syncRotation();
 })();
 </script>

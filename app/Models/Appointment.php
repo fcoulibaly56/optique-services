@@ -11,6 +11,7 @@ class Appointment extends Model {
     'motive',
     'requested_at',
     'proposed_at',
+    'client_notified_at',
     'duration_minutes',
     'status',
     'comment',
@@ -19,7 +20,7 @@ class Appointment extends Model {
     'guest_email',
     'created_by',
 ];
-    protected $casts = ['requested_at' => 'datetime'];
+    protected $casts = ['requested_at' => 'datetime', 'client_notified_at' => 'datetime','proposed_at'  => 'datetime'];
     public function customer() { return $this->belongsTo(Customer::class); }
      // ---- Helpers pour l'affichage en français ----
     public function getMotiveLabelAttribute(): string

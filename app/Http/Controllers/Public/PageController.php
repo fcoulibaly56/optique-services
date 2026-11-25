@@ -51,4 +51,8 @@ class PageController extends Controller
 
         return back()->with('success', 'Votre message a bien été envoyé. Nous vous recontacterons très vite.');
     }
+        public function vision()
+    {
+        return view('public.vision');
+    }
 }

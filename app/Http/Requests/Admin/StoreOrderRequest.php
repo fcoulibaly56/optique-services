@@ -23,7 +23,7 @@ class StoreOrderRequest extends FormRequest
         'discount' => 'nullable|numeric|min:0',
         'insurance_id' => 'nullable|exists:insurances,id',
         'deposit_amount' => 'nullable|numeric|min:0',
-        'delivery_date' => 'nullable|date',
+        'delivery_date' => 'nullable|date|after_or_equal:today',
         'frame_product_id' => 'nullable|exists:products,id',
         // Ordonnance
         'doctor_name' => 'nullable|string',

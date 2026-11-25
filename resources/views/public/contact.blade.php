@@ -5,11 +5,12 @@
 
 @section('content')
 @php
-    $phonePrimary = '+22376882712';
-    $phoneSecondary = '+22365868757';
-    $whatsAppUrl = 'https://wa.me/22376882712?text=' . rawurlencode('Bonjour Optique Services, je souhaite obtenir un renseignement.');
+    $phonePrimary = config('shop.phones.0.tel');
+    $phoneSecondary = config('shop.phones.1.tel');
+    $whatsAppUrl = 'https://wa.me/' . config('shop.whatsapp') . '?text=' . rawurlencode('Bonjour Optique Services, je souhaite obtenir un renseignement.');
     $mapsUrl = 'https://maps.google.com/?q=' . rawurlencode('Station TOTAL, Place CAN, ACI 2000, Bamako');
 @endphp
+
 
 <section class="relative isolate overflow-hidden bg-[#fbf8f6]">
     <div class="pointer-events-none absolute -right-20 -top-24 -z-10 h-80 w-80 rounded-full bg-[#f1deda]/70 blur-3xl sm:h-[32rem] sm:w-[32rem]" aria-hidden="true"></div>
@@ -30,7 +31,11 @@
                 <div class="flex gap-4"><span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#fbefed] text-optique-red"><svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657 13.414 20.9a2 2 0 0 1-2.828 0l-4.243-4.243a8 8 0 1 1 11.314 0Z"/><circle cx="12" cy="11" r="2.5"/></svg></span><div><h2 class="font-serif text-lg">Venez nous voir</h2><p class="mt-1 text-sm leading-6 text-optique-gray">Station TOTAL, près de la Place CAN<br>ACI 2000, Bamako</p><a href="{{ $mapsUrl }}" target="_blank" rel="noopener noreferrer" class="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-optique-red hover:underline">Ouvrir l’itinéraire <span aria-hidden="true">↗</span></a></div></div>
             </article>
             <article class="rounded-3xl border border-optique-border bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-lg sm:p-6">
-                <div class="flex gap-4"><span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#fbefed] text-optique-red"><svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 0 1 2-2h3.2a1 1 0 0 1 .95.68l1.5 4.5a1 1 0 0 1-.5 1.2l-2.3 1.15a11 11 0 0 0 5.5 5.5l1.15-2.3a1 1 0 0 1 1.2-.5l4.5 1.5a1 1 0 0 1 .7.95V19a2 2 0 0 1-2 2h-1C9.7 21 3 14.3 3 6V5Z"/></svg></span><div><h2 class="font-serif text-lg">Appelez-nous</h2><div class="mt-1 space-y-1 text-sm"><a href="tel:{{ $phonePrimary }}" class="block text-optique-gray transition hover:text-optique-red">76 88 27 12</a><a href="tel:{{ $phoneSecondary }}" class="block text-optique-gray transition hover:text-optique-red">65 86 87 57</a></div></div></div>
+                <div class="flex gap-4"><span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#fbefed] text-optique-red"><svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 0 1 2-2h3.2a1 1 0 0 1 .95.68l1.5 4.5a1 1 0 0 1-.5 1.2l-2.3 1.15a11 11 0 0 0 5.5 5.5l1.15-2.3a1 1 0 0 1 1.2-.5l4.5 1.5a1 1 0 0 1 .7.95V19a2 2 0 0 1-2 2h-1C9.7 21 3 14.3 3 6V5Z"/></svg></span><div><h2 class="font-serif text-lg">Appelez-nous</h2><div class="mt-1 space-y-1 text-sm">
+@foreach(config('shop.phones') as $phone)
+    <a href="tel:{{ $phone['tel'] }}" class="block text-optique-gray transition hover:text-optique-red">{{ $phone['display'] }}</a>
+@endforeach
+            </div></div></div>
             </article>
             <article class="rounded-3xl border border-optique-border bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-lg sm:p-6">
                 <div class="flex gap-4"><span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#fbefed] text-optique-red"><svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 7v5l3 2"/></svg></span><div><h2 class="font-serif text-lg">Horaires d’ouverture</h2><div class="mt-2 space-y-1 text-sm text-optique-gray"><p class="flex justify-between gap-6"><span>Lundi – vendredi</span><span class="font-medium text-optique-text">08:30 – 18:30</span></p><p class="flex justify-between gap-6"><span>Samedi</span><span class="font-medium text-optique-text">09:00 – 14:00</span></p><p class="flex justify-between gap-6"><span>Dimanche</span><span class="font-medium text-optique-red">Fermé</span></p></div></div></div>

@@ -10,15 +10,16 @@ use Illuminate\Support\Str;
 class AppointmentController extends Controller
 {
     public function index()
-    {
-        $customer = Auth::user()->customer;
-        // On affiche les RDV à venir ou en attente
-        $appointments = $customer->appointments()
-            ->orderBy('requested_at', 'desc')
-            ->get();
+{
+    $customer = Auth::user()->customer;
 
-        return view('client.appointments.index', compact('appointments'));
-    }
+    // On marque tous les RDV comme "vus" par le client
+    $customer->appointments()->update(['client_notified_at' => now()]);
+
+    $appointments = $customer->appointments()->orderBy('requested_at', 'desc')->get();
+
+    return view('client.appointments.index', compact('appointments'));
+}
 
     public function store(Request $request)
     {

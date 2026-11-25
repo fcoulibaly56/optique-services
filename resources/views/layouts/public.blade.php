@@ -25,9 +25,10 @@
     <a href="#contenu" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-3 focus:shadow-lg">Aller au contenu</a>
     <div class="hidden bg-[#f8f3f1] text-optique-gray sm:block"><div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-2 text-xs sm:px-6 lg:px-8"><p class="flex items-center gap-2"><span class="h-1.5 w-1.5 rounded-full bg-optique-red"></span> Votre opticien de proximité à ACI 2000</p><a href="{{ \Illuminate\Support\Facades\Route::has('contact') ? route('contact') : url('/#contact') }}" class="font-medium hover:text-optique-red">Nous trouver <span aria-hidden="true">↗</span></a></div></div>
 
-    <header class="sticky top-0 z-50 border-b border-optique-border/70 bg-white/95 backdrop-blur-xl">
+        <header class="sticky top-0 z-50 border-b border-optique-border/70 bg-white/95 backdrop-blur-xl">
         <div class="mx-auto flex h-[4.5rem] max-w-7xl items-center justify-between px-4 sm:h-20 sm:px-6 lg:px-8">
-            <a href="{{ \Illuminate\Support\Facades\Route::has('home') ? route('home') : url('/') }}" class="group flex min-w-0 items-center gap-2.5" aria-label="Optique Services — accueil">
+            <!-- Logo -->
+            <a href="{{ route('home') }}" class="group flex min-w-0 items-center gap-2.5" aria-label="Optique Services — accueil">
                 @if(file_exists(public_path('images/logo.png')))
                     <img src="{{ asset('images/logo.png') }}" alt="Optique Services" class="h-10 w-auto object-contain transition-transform duration-300 group-hover:scale-105 sm:h-12">
                 @else
@@ -35,24 +36,82 @@
                     <span class="leading-tight"><span class="block font-serif text-lg font-semibold tracking-tight sm:text-xl">Optique Services</span><span class="hidden text-[10px] font-medium uppercase tracking-[.18em] text-optique-gray sm:block">Votre regard, notre priorité</span></span>
                 @endif
             </a>
-            <nav class="hidden items-center gap-7 lg:flex" aria-label="Navigation principale">
-                <a href="{{ \Illuminate\Support\Facades\Route::has('home') ? route('home') : url('/') }}" class="text-sm font-medium transition hover:text-optique-red">Accueil</a>
-                <a href="{{ \Illuminate\Support\Facades\Route::has('products.index') ? route('products.index') : url('/#collection') }}" class="text-sm font-medium transition hover:text-optique-red">Nos lunettes</a>
-                <a href="{{ \Illuminate\Support\Facades\Route::has('services') ? route('services') : url('/#services') }}" class="text-sm font-medium transition hover:text-optique-red">Nos services</a>
-                <a href="{{ \Illuminate\Support\Facades\Route::has('about') ? route('about') : url('/#boutique') }}" class="text-sm font-medium transition hover:text-optique-red">Le magasin</a>
-                <a href="{{ \Illuminate\Support\Facades\Route::has('contact') ? route('contact') : url('/#contact') }}" class="text-sm font-medium transition hover:text-optique-red">Contact</a>
+
+            <!-- Menu Central (Desktop) -->
+            <nav class="hidden md:flex space-x-8">
+                <a href="{{ route('home') }}" class="text-sm font-medium transition-colors {{ request()->routeIs('home') ? 'text-[#A33B36] font-bold border-b-2 border-[#A33B36]' : 'text-gray-600 hover:text-[#A33B36]' }}">Accueil</a>
+                <a href="{{ route('products.index') }}" class="text-sm font-medium transition-colors {{ request()->routeIs('products.*') ? 'text-[#A33B36] font-bold border-b-2 border-[#A33B36]' : 'text-gray-600 hover:text-[#A33B36]' }}">Montures</a>
+                <a href="{{ route('services') }}" class="text-sm font-medium transition-colors {{ request()->routeIs('services') ? 'text-[#A33B36] font-bold border-b-2 border-[#A33B36]' : 'text-gray-600 hover:text-[#A33B36]' }}">Services</a>
+                <a href="{{ route('about') }}" class="text-sm font-medium transition-colors {{ request()->routeIs('about') ? 'text-[#A33B36] font-bold border-b-2 border-[#A33B36]' : 'text-gray-600 hover:text-[#A33B36]' }}">À propos</a>
+                <a href="{{ route('contact') }}" class="text-sm font-medium transition-colors {{ request()->routeIs('contact') ? 'text-[#A33B36] font-bold border-b-2 border-[#A33B36]' : 'text-gray-600 hover:text-[#A33B36]' }}">Contact</a>
             </nav>
-            <div class="hidden items-center gap-3 lg:flex">
-                @if(\Illuminate\Support\Facades\Route::has('login'))<a href="{{ route('login') }}" class="rounded-full px-4 py-2.5 text-sm font-semibold text-optique-gray transition hover:bg-optique-bg hover:text-optique-text">Mon espace</a>@endif
-                <a href="{{ \Illuminate\Support\Facades\Route::has('appointment.create') ? route('appointment.create') : url('/#contact') }}" class="group inline-flex items-center gap-2 rounded-full bg-optique-red px-5 py-3 text-sm font-semibold text-white shadow-md shadow-optique-red/15 transition duration-200 hover:-translate-y-0.5 hover:bg-optique-redhover hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-optique-red focus:ring-offset-2">Prendre rendez-vous <span class="transition-transform group-hover:translate-x-1" aria-hidden="true">↗</span></a>
+
+            <!-- Actions Droite (Desktop) -->
+            <div class="hidden items-center gap-4 lg:flex">
+                @auth
+                    <!-- Si l'utilisateur est connecté -->
+                    @if(auth()->user()->role === 'client')
+                        <a href="{{ route('client.dashboard') }}" class="text-sm font-semibold text-optique-gray hover:text-optique-red">Mon Espace</a>
+                    @else
+                        <a href="{{ route('admin.dashboard') }}" class="text-sm font-semibold text-optique-gray hover:text-optique-red">Espace Équipe</a>
+                    @endif
+
+                    <form method="POST" action="{{ route('logout') }}" class="inline">
+                        @csrf
+                        <button type="submit" class="text-sm font-semibold text-gray-500 hover:text-red-500">Déconnexion</button>
+                    </form>
+                @else
+                    <!-- Si l'utilisateur n'est pas connecté -->
+                    <a href="{{ route('login') }}" class="text-sm font-semibold text-optique-gray hover:text-optique-red">Connexion</a>
+
+                    <!-- Lien discret pour le suivi si un RDV a été pris -->
+                    @if(session('appointment_reference'))
+                        <a href="{{ route('appointment.track') }}" class="text-sm font-semibold text-optique-red hover:underline">Suivre mon RDV</a>
+                    @endif
+                @endauth
+
+                <!-- Bouton CTA Principal -->
+                <a href="{{ route('appointment.create') }}" class="group inline-flex items-center gap-2 rounded-full bg-optique-red px-5 py-3 text-sm font-semibold text-white shadow-md shadow-optique-red/15 transition duration-200 hover:-translate-y-0.5 hover:bg-optique-redhover hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-optique-red focus:ring-offset-2">
+                    Prendre rendez-vous <span class="transition-transform group-hover:translate-x-1" aria-hidden="true">↗</span>
+                </a>
             </div>
-            <button id="menu-mobile-toggle" type="button" class="grid h-11 w-11 place-items-center rounded-full border border-optique-border transition hover:bg-optique-bg focus:outline-none focus:ring-2 focus:ring-optique-red lg:hidden" aria-expanded="false" aria-controls="menu-mobile" aria-label="Ouvrir le menu"><svg data-menu-icon="open" viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg><svg data-menu-icon="close" hidden viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" d="m6 6 12 12M18 6 6 18"/></svg></button>
+
+            <!-- Bouton Menu Mobile -->
+            <button id="menu-mobile-toggle" type="button" class="grid h-11 w-11 place-items-center rounded-full border border-optique-border transition hover:bg-optique-bg focus:outline-none focus:ring-2 focus:ring-optique-red lg:hidden" aria-expanded="false" aria-controls="menu-mobile" aria-label="Ouvrir le menu">
+                <svg data-menu-icon="open" viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg>
+                <svg data-menu-icon="close" hidden viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" d="m6 6 12 12M18 6 6 18"/></svg>
+            </button>
         </div>
-        <div id="menu-mobile" hidden class="absolute inset-x-0 top-full border-b border-optique-border bg-white px-4 pb-5 pt-2 shadow-xl shadow-black/5 lg:hidden"><nav class="mx-auto flex max-w-7xl flex-col" aria-label="Navigation mobile">
-            <a href="{{ \Illuminate\Support\Facades\Route::has('home') ? route('home') : url('/') }}" class="rounded-xl px-3 py-3 font-medium hover:bg-optique-bg">Accueil</a><a href="{{ \Illuminate\Support\Facades\Route::has('products.index') ? route('products.index') : url('/#collection') }}" class="rounded-xl px-3 py-3 font-medium hover:bg-optique-bg">Nos lunettes</a><a href="{{ \Illuminate\Support\Facades\Route::has('services') ? route('services') : url('/#services') }}" class="rounded-xl px-3 py-3 font-medium hover:bg-optique-bg">Nos services</a><a href="{{ \Illuminate\Support\Facades\Route::has('about') ? route('about') : url('/#boutique') }}" class="rounded-xl px-3 py-3 font-medium hover:bg-optique-bg">Le magasin</a><a href="{{ \Illuminate\Support\Facades\Route::has('contact') ? route('contact') : url('/#contact') }}" class="rounded-xl px-3 py-3 font-medium hover:bg-optique-bg">Contact</a>
-            @if(\Illuminate\Support\Facades\Route::has('login'))<a href="{{ route('login') }}" class="rounded-xl px-3 py-3 font-medium text-optique-gray hover:bg-optique-bg">Mon espace client</a>@endif
-            <a href="{{ \Illuminate\Support\Facades\Route::has('appointment.create') ? route('appointment.create') : url('/#contact') }}" class="mt-3 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-optique-red px-5 py-3 font-semibold text-white">Prendre rendez-vous <span aria-hidden="true">↗</span></a>
-        </nav></div>
+
+        <!-- Menu Mobile (Overlay) -->
+        <div id="menu-mobile" hidden class="absolute inset-x-0 top-full border-b border-optique-border bg-white px-4 pb-5 pt-2 shadow-xl shadow-black/5 lg:hidden">
+            <nav class="mx-auto flex max-w-7xl flex-col" aria-label="Navigation mobile">
+                <a href="{{ route('home') }}" class="rounded-xl px-3 py-3 font-medium hover:bg-optique-bg">Accueil</a>
+                <a href="{{ route('products.index') }}" class="rounded-xl px-3 py-3 font-medium hover:bg-optique-bg">Nos lunettes</a>
+                <a href="{{ route('services') }}" class="rounded-xl px-3 py-3 font-medium hover:bg-optique-bg">Nos services</a>
+                <a href="{{ route('about') }}" class="rounded-xl px-3 py-3 font-medium hover:bg-optique-bg">Le magasin</a>
+                <a href="{{ route('contact') }}" class="rounded-xl px-3 py-3 font-medium hover:bg-optique-bg">Contact</a>
+
+                @auth
+                    @if(auth()->user()->role === 'client')
+                        <a href="{{ route('client.dashboard') }}" class="rounded-xl px-3 py-3 font-medium text-optique-red hover:bg-optique-bg">Mon Espace</a>
+                    @else
+                        <a href="{{ route('admin.dashboard') }}" class="rounded-xl px-3 py-3 font-medium text-optique-red hover:bg-optique-bg">Espace Équipe</a>
+                    @endif
+                    <form method="POST" action="{{ route('logout') }}" class="mt-1">
+                        @csrf
+                        <button type="submit" class="w-full text-left rounded-xl px-3 py-3 font-medium text-red-600 hover:bg-red-50">Déconnexion</button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}" class="rounded-xl px-3 py-3 font-medium text-optique-gray hover:bg-optique-bg">Connexion</a>
+                    @if(session('appointment_reference'))
+                        <a href="{{ route('appointment.track') }}" class="rounded-xl px-3 py-3 font-medium text-optique-red hover:bg-optique-bg">Suivre mon RDV</a>
+                    @endif
+                @endauth
+
+                <a href="{{ route('appointment.create') }}" class="mt-3 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-optique-red px-5 py-3 font-semibold text-white">Prendre rendez-vous <span aria-hidden="true">↗</span></a>
+            </nav>
+        </div>
     </header>
 
     <main id="contenu" class="flex-1">@yield('content')</main>

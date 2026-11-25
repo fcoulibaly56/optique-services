@@ -169,14 +169,15 @@
         </main>
     </div>
 
-    <script>
-        document.addEventListener('alpine:init', () => {
+      <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // 1. Mise à jour du badge Messages (toutes les 30 secondes)
             setInterval(async () => {
                 try {
-                    const response = await fetch('{{ route('api.unread') }}');
+                    const response = await fetch('{{ route("api.unread") }}');
                     const data = await response.json();
 
-                    // Mise à jour côté Admin
                     const adminBadge = document.getElementById('admin-unread-badge');
                     if (adminBadge) {
                         if (data.count > 0) {
@@ -186,21 +187,18 @@
                             adminBadge.classList.add('hidden');
                         }
                     }
-
-                    // Mise à jour côté Client
-                    const clientBadge = document.getElementById('client-unread-badge');
-                    if (clientBadge) {
-                        if (data.count > 0) {
-                            clientBadge.textContent = data.count;
-                            clientBadge.classList.remove('hidden');
-                        } else {
-                            clientBadge.classList.add('hidden');
-                        }
-                    }
                 } catch (e) {
-                    console.error('Erreur polling messages', e);
+                    console.error('Erreur polling admin', e);
                 }
-            }, 30000); // Vérifie toutes les 30 secondes
+            }, 30000);
+
+            // 2. Rafraîchissement automatique de la page (uniquement sur le Dashboard et les listes)
+            @if(request()->routeIs('admin.dashboard') || request()->routeIs('admin.orders.index') || request()->routeIs('admin.appointments.index'))
+                setTimeout(() => {
+                    window.location.reload();
+                }, 60000); // Recharge après 60 secondes
+            @endif
+
         });
     </script>
 </body>
